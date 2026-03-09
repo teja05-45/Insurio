@@ -1,109 +1,212 @@
-# 🛡️ PolicyPilot AI
+# 🛡️ Insurio
 
-**AI Insurance Policy Intelligence Assistant**  
-A single-page Streamlit workspace for analyzing insurance documents with RAG + Groq LLM.
+### AI Insurance Policy Intelligence Assistant
+
+**Insurio** is an AI-powered insurance policy assistant that helps users understand complex insurance documents instantly. Upload an insurance PDF and ask questions in natural language. Insurio analyzes the document using **Retrieval-Augmented Generation (RAG)** and **Groq LLaMA models** to deliver clear answers about coverage, exclusions, waiting periods, and claims.
+
+Built with **Streamlit, Groq LLMs, semantic search, and speech-to-text**, Insurio transforms lengthy insurance policies into an interactive conversational experience.
 
 ---
 
-## Features
+# 🚀 Features
 
 | Feature | Description |
-|---|---|
-| 📋 PDF Upload | Parse any insurance policy PDF |
-| 🔍 Smart RAG | Semantic search with embeddings (falls back to keyword) |
-| 💬 AI Chat | Natural language Q&A powered by Groq LLaMA 3 |
-| 📊 Auto Insights | Coverage summary, exclusions, waiting periods |
-| 🎙️ Voice Input | Ask questions by speaking |
-| 🧠 Chat Memory | Context-aware conversation history |
+|------|------|
+| 📄 **PDF Policy Upload** | Upload any insurance policy document for analysis |
+| 🔍 **RAG-based Document Search** | Retrieves the most relevant policy clauses using semantic embeddings |
+| 💬 **Conversational AI** | Ask questions in plain English and receive contextual answers |
+| 📊 **Automated Policy Insights** | Extracts key sections like coverage, exclusions, and waiting periods |
+| 🎙️ **Voice Query Support** | Ask questions using speech input |
+| 🧠 **Conversation Memory** | Maintains chat context for follow-up questions |
 
 ---
 
-## Quick Start
+# ⚡ Quick Start
 
-### 1. Install dependencies
+## 1️⃣ Install Dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-For voice support:
+### Voice Input Support
+
+Install PyAudio depending on your OS.
+
+**macOS**
+
 ```bash
-# macOS
-brew install portaudio && pip install pyaudio
-
-# Ubuntu/Debian
-sudo apt-get install portaudio19-dev && pip install pyaudio
-
-# Windows
-pip install pipwin && pipwin install pyaudio
+brew install portaudio
+pip install pyaudio
 ```
 
-### 2. Get Groq API Key (free)
+**Ubuntu / Debian**
 
-Visit [console.groq.com](https://console.groq.com) and create a free account.  
-Copy your API key.
+```bash
+sudo apt-get install portaudio19-dev
+pip install pyaudio
+```
 
-### 3. Run the app
+**Windows**
+
+```bash
+pip install pipwin
+pipwin install pyaudio
+```
+
+---
+
+## 2️⃣ Get a Groq API Key
+
+Create a free account and generate an API key:
+
+https://console.groq.com
+
+---
+
+## 3️⃣ Add API Key
+
+Create a `.env` file in the project root:
+
+```
+GROQ_API_KEY=your_api_key_here
+```
+
+---
+
+## 4️⃣ Run the Application
 
 ```bash
 streamlit run app.py
 ```
 
-### 4. Use PolicyPilot AI
+Open your browser:
 
-1. Open `http://localhost:8501`
-2. Paste your Groq API key in the sidebar
-3. Upload an insurance policy PDF
-4. Ask questions in the chat panel
+```
+http://localhost:8501
+```
 
 ---
 
-## Architecture
+# 💡 How It Works
+
+1. Upload an insurance policy PDF.
+2. Insurio extracts and indexes the document.
+3. The RAG pipeline retrieves the most relevant sections.
+4. The LLM generates a contextual answer.
+5. Responses are presented in a conversational chat interface.
+
+---
+
+# 🧠 Architecture
 
 ```
-policypilot/
-├── app.py                    ← Main Streamlit single-page app
+insurio/
+│
+├── app.py
 ├── requirements.txt
+│
 └── modules/
-    ├── groq_client.py        ← Groq LLM integration (LLaMA 3, Mixtral)
-    ├── rag_pipeline.py       ← PDF parsing, chunking, embeddings, retrieval
-    ├── voice_input.py        ← Speech-to-text via SpeechRecognition
-    └── styles.py             ← Custom CSS design system
+    ├── groq_client.py
+    ├── rag_pipeline.py
+    ├── voice_input.py
+    ├── sanitize.py
+    └── styles.py
 ```
 
-## RAG Pipeline
+### Module Responsibilities
+
+| Module | Purpose |
+|------|------|
+| `app.py` | Main Streamlit application and UI |
+| `groq_client.py` | Groq LLM integration |
+| `rag_pipeline.py` | Document parsing, chunking, embeddings, retrieval |
+| `voice_input.py` | Speech-to-text input |
+| `sanitize.py` | Sanitizes LLM responses |
+| `styles.py` | Custom UI design system |
+
+---
+
+# 🔍 RAG Pipeline
 
 ```
 PDF Upload
     ↓
 Text Extraction (PyMuPDF)
     ↓
-Chunking (800 chars, 150 overlap)
+Text Chunking
     ↓
-Embeddings (sentence-transformers: all-MiniLM-L6-v2)
-    │  └─ Fallback: TF-IDF keyword search
+Embedding Generation
+(sentence-transformers)
     ↓
-In-memory Vector Store (cosine similarity)
+Vector Search
+(cosine similarity)
     ↓
-Query → Top-K Retrieval → Groq LLaMA 3 → Answer
+Top-K Retrieval
+    ↓
+Groq LLaMA Model
+    ↓
+AI Response
 ```
 
-## Sample Questions
+Fallback mechanism:
 
-- *"Is knee replacement surgery covered?"*
-- *"What is the waiting period for cataract surgery?"*
-- *"What pre-existing conditions are excluded?"*
-- *"How do I file a hospitalization claim?"*
-- *"What's the maximum annual coverage limit?"*
-
----
-
-## LLM Models
-
-Uses **Groq** for ultra-fast inference:
-- **Primary**: `llama3-70b-8192`
-- **Fallback**: `mixtral-8x7b-32768`
+```
+Embedding Search
+     ↓
+If unavailable
+     ↓
+TF-IDF Keyword Search
+```
 
 ---
 
-*Always verify coverage details directly with your insurance provider.*
+# 💬 Example Questions
+
+You can ask questions such as:
+
+- “Is knee replacement surgery covered?”
+- “What are the waiting periods for cataract surgery?”
+- “What conditions are excluded from coverage?”
+- “How do I file a hospitalization claim?”
+- “What is the maximum annual coverage limit?”
+
+---
+
+# 🤖 LLM Models
+
+Insurio uses **Groq’s high-performance inference**.
+
+| Model | Purpose |
+|------|------|
+| `llama3-70b-8192` | Primary model for policy understanding |
+| `mixtral-8x7b-32768` | Fallback model for complex queries |
+
+---
+
+# 🛠️ Tech Stack
+
+- Python
+- Streamlit
+- Groq LLM
+- Sentence Transformers
+- PyMuPDF
+- SpeechRecognition
+- Retrieval-Augmented Generation (RAG)
+
+---
+
+# ⚠️ Disclaimer
+
+Insurio is designed for informational purposes only.  
+Always verify policy details directly with your insurance provider.
+
+---
+
+# 📌 Future Improvements
+
+- Multi-document policy comparison  
+- Claim eligibility prediction  
+- Policy risk scoring  
+- Mobile-friendly UI  
+- Multi-language support  
