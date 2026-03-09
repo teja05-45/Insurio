@@ -1,0 +1,28 @@
+# PolicyPilot AI — Python dependencies
+# Install with: pip install -r requirements.txt
+
+# ── Core ──────────────────────────────────────────
+streamlit>=1.32.0
+
+# ── Environment Variables ─────────────────────────
+python-dotenv>=1.0.0      # loads GROQ_API_KEY from .env file
+
+# ── LLM (Groq) ────────────────────────────────────
+groq>=0.4.0
+
+# ── PDF Parsing ────────────────────────────────────
+PyMuPDF>=1.23.0          # fitz — fast PDF text extraction
+
+# ── RAG / Embeddings (optional but recommended) ───
+sentence-transformers>=2.2.0   # semantic embeddings
+numpy>=1.24.0
+
+# ── Voice Input (optional) ────────────────────────
+SpeechRecognition>=3.10.0
+pyaudio>=0.2.13                # microphone access (may need system deps)
+
+# ─────────────────────────────────────────────────
+# Notes:
+#   pyaudio on macOS:  brew install portaudio && pip install pyaudio
+#   pyaudio on Ubuntu: sudo apt-get install portaudio19-dev && pip install pyaudio
+#   pyaudio on Windows: pip install pipwin && pipwin install pyaudio
