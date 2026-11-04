@@ -1,0 +1,11 @@
+# Optional extras. The API runs without these using BM25-only retrieval
+# and no OCR; capabilities are reported through GET /api/v1/meta.
+-r requirements.txt
+
+# Local ONNX embedding model (bge-small-en-v1.5, 384 dimensions).
+# Avoids the ~2 GB torch install required by sentence-transformers.
+fastembed==0.4.2
+
+# OCR fallback for scanned pages. Requires the tesseract-ocr binary.
+pytesseract==0.3.13
+Pillow==11.0.0
