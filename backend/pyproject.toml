@@ -13,7 +13,12 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["S105", "S106"]
-"app/core/config.py" = ["S104"]
+# S104: binding all interfaces is deployment configuration, not a hardcoded host.
+# S105: the default secret is a development sentinel rejected at startup in production.
+"app/core/config.py" = ["S104", "S105"]
+# S105: token *type* labels are not passwords.
+"app/core/security.py" = ["S105"]
+"app/schemas/auth.py" = ["S105"]
 "alembic/*" = ["E501", "I001"]
 
 [tool.pytest.ini_options]
