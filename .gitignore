@@ -1,5 +1,36 @@
 # Environment variables — NEVER commit this
 .env
+.env.local
+.env.*.local
+
+# Node / Next.js
+node_modules/
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/.turbo/
+*.tsbuildinfo
+
+# Runtime data and test databases
+backend/data/
+data/
+*.db
+*.sqlite3
+
+# Logs and generated test artifacts
+*.log
+pytest.out
+frontend/test.log
+frontend/build.log
+frontend/typecheck.log
+
+# Tool caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+coverage/
+.coverage
+htmlcov/
 
 # Python
 __pycache__/
