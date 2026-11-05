@@ -5,6 +5,7 @@ from datetime import datetime
 from typing import Any
 
 from sqlalchemy import (
+    JSON,
     Boolean,
     CheckConstraint,
     DateTime,
@@ -12,7 +13,6 @@ from sqlalchemy import (
     ForeignKey,
     Index,
     Integer,
-    JSON,
     String,
     Text,
     UniqueConstraint,
@@ -43,9 +43,7 @@ class Conversation(Base, TimestampMixin):
         order_by="Message.created_at",
     )
 
-    __table_args__ = (
-        Index("ix_conversations_user_activity", "user_id", "last_activity_at"),
-    )
+    __table_args__ = (Index("ix_conversations_user_activity", "user_id", "last_activity_at"),)
 
 
 class Message(Base, TimestampMixin):

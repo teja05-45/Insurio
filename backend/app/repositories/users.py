@@ -76,7 +76,9 @@ def list_active(db: Session, user_id: uuid.UUID) -> list[UserSession]:
     )
 
 
-def revoke_all_sessions(db: Session, user_id: uuid.UUID, except_id: uuid.UUID | None = None) -> None:
+def revoke_all_sessions(
+    db: Session, user_id: uuid.UUID, except_id: uuid.UUID | None = None
+) -> None:
     now = datetime.now(UTC)
     stmt = select(UserSession).where(
         UserSession.user_id == user_id, UserSession.revoked_at.is_(None)

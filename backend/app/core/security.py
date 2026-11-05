@@ -61,7 +61,9 @@ def decode_access_token(token: str, settings: Settings) -> dict[str, Any]:
             status_code=401,
         ) from exc
     except jwt.PyJWTError as exc:
-        raise AppError("Invalid authentication token.", code="invalid_token", status_code=401) from exc
+        raise AppError(
+            "Invalid authentication token.", code="invalid_token", status_code=401
+        ) from exc
 
     if payload.get("typ") != TOKEN_TYPE_ACCESS or not payload.get("sub"):
         raise AppError("Invalid authentication token.", code="invalid_token", status_code=401)

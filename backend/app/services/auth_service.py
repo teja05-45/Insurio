@@ -66,9 +66,7 @@ def register(
         full_name=payload.full_name.strip(),
     )
     user_repo.touch_login(db, user)
-    return _auth_response(
-        db, user, settings, user_agent=user_agent, ip_address=ip_address
-    )
+    return _auth_response(db, user, settings, user_agent=user_agent, ip_address=ip_address)
 
 
 def login(
@@ -86,9 +84,7 @@ def login(
     if not user.is_active:
         raise AppError("This account is disabled.", code="account_disabled", status_code=403)
     user_repo.touch_login(db, user)
-    return _auth_response(
-        db, user, settings, user_agent=user_agent, ip_address=ip_address
-    )
+    return _auth_response(db, user, settings, user_agent=user_agent, ip_address=ip_address)
 
 
 def rotate_refresh_token(db: Session, raw_token: str, settings: Settings) -> AuthResponse:
@@ -103,7 +99,9 @@ def rotate_refresh_token(db: Session, raw_token: str, settings: Settings) -> Aut
     if expires_at <= now:
         user_repo.revoke_session(db, session)
         db.commit()
-        raise AppError("Session has expired. Please sign in again.", code="expired_refresh", status_code=401)
+        raise AppError(
+            "Session has expired. Please sign in again.", code="expired_refresh", status_code=401
+        )
 
     user = user_repo.get_by_id(db, session.user_id)
     if user is None or not user.is_active:
@@ -180,7 +178,11 @@ def change_password(db: Session, user: User, current: str, new: str) -> None:
     if not verify_password(current, user.hashed_password):
         raise AppError("Current password is incorrect.", code="invalid_password", status_code=400)
     if current == new:
-        raise AppError("New password must differ from the current password.", code="same_password", status_code=400)
+        raise AppError(
+            "New password must differ from the current password.",
+            code="same_password",
+            status_code=400,
+        )
     user.hashed_password = hash_password(new)
     db.add(user)
     user_repo.revoke_all_sessions(db, user.id)

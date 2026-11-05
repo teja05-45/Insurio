@@ -85,10 +85,7 @@ def build_sources(
         )
         heading = f' heading="{html.escape(source.heading)}"' if source.heading else ""
         body = escape_source_text(source.content[:MAX_SOURCE_CHARS])
-        block = (
-            f'<source id="S{len(included) + 1}" {page_label}{heading}>\n'
-            f"{body}\n</source>"
-        )
+        block = f'<source id="S{len(included) + 1}" {page_label}{heading}>\n' f"{body}\n</source>"
         if used + len(block) > max_context_chars and included:
             break
         parts.append(block)

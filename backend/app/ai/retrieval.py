@@ -97,9 +97,7 @@ def retrieve(
             mode = "hybrid"
 
     # Candidate pool from both retrievers.
-    bm25_order = sorted(range(len(chunks)), key=lambda i: bm25_scores[i], reverse=True)[
-        :candidates
-    ]
+    bm25_order = sorted(range(len(chunks)), key=lambda i: bm25_scores[i], reverse=True)[:candidates]
     vector_order = sorted(range(len(chunks)), key=lambda i: vector_scores[i], reverse=True)[
         :candidates
     ]

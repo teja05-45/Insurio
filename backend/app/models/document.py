@@ -5,12 +5,12 @@ from datetime import datetime
 from typing import Any
 
 from sqlalchemy import (
+    JSON,
     CheckConstraint,
     DateTime,
     ForeignKey,
     Index,
     Integer,
-    JSON,
     String,
     Text,
     UniqueConstraint,
@@ -32,7 +32,9 @@ class Document(Base, TimestampMixin):
     )
     original_filename: Mapped[str] = mapped_column(String(255), nullable=False)
     storage_key: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
-    content_type: Mapped[str] = mapped_column(String(100), nullable=False, default="application/pdf")
+    content_type: Mapped[str] = mapped_column(
+        String(100), nullable=False, default="application/pdf"
+    )
     size_bytes: Mapped[int] = mapped_column(Integer, nullable=False)
     sha256: Mapped[str] = mapped_column(String(64), nullable=False)
     page_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
