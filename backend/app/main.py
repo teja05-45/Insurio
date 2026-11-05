@@ -5,7 +5,7 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.routes import auth, health
+from app.api.routes import auth, chat, comparisons, documents, health, meta
 from app.core.config import DEFAULT_SECRET, get_settings
 from app.core.errors import register_exception_handlers
 from app.core.logging import configure_logging
@@ -47,6 +47,10 @@ def create_app() -> FastAPI:
 
     app.include_router(health.router)
     app.include_router(auth.router, prefix=settings.API_V1_PREFIX)
+    app.include_router(documents.router, prefix=settings.API_V1_PREFIX)
+    app.include_router(chat.router, prefix=settings.API_V1_PREFIX)
+    app.include_router(comparisons.router, prefix=settings.API_V1_PREFIX)
+    app.include_router(meta.router, prefix=settings.API_V1_PREFIX)
 
     @app.get("/", include_in_schema=False)
     def root() -> dict[str, str]:
