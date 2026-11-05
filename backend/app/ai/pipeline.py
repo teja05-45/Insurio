@@ -8,7 +8,7 @@ from app.ai.citations import validate_citations
 from app.ai.embeddings import Embedder
 from app.ai.prompts import build_answer_messages, build_sources, source_is_suspicious
 from app.ai.retrieval import retrieve
-from app.ai.types import GroundedAnswer, LLM, RetrievedChunk, ValidatedCitation
+from app.ai.types import LLM, GroundedAnswer, RetrievedChunk
 
 INSUFFICIENT_MESSAGE = (
     "I could not find enough evidence in this policy to answer that.\n\n"
@@ -202,8 +202,14 @@ class AnswerFieldExtractor:
                         self.pos += 1
                         continue
                     decoded = {
-                        "n": "\n", "t": "\t", "r": "\r", "b": "\b", "f": "\f",
-                        '"': '"', "\\": "\\", "/": "/",
+                        "n": "\n",
+                        "t": "\t",
+                        "r": "\r",
+                        "b": "\b",
+                        "f": "\f",
+                        '"': '"',
+                        "\\": "\\",
+                        "/": "/",
                     }.get(char)
                     if decoded is not None:
                         output.append(decoded)

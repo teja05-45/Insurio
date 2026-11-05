@@ -33,19 +33,19 @@ class RetrievedChunk:
 
     @property
     def page_start(self) -> int:
-        return int(getattr(self.ref, "page_start"))
+        return int(self.ref.page_start)  # type: ignore[attr-defined]
 
     @property
     def page_end(self) -> int:
-        return int(getattr(self.ref, "page_end"))
+        return int(self.ref.page_end)  # type: ignore[attr-defined]
 
     @property
     def content(self) -> str:
-        return str(getattr(self.ref, "content"))
+        return str(self.ref.content)  # type: ignore[attr-defined]
 
     @property
     def heading(self) -> str:
-        return str(getattr(self.ref, "heading", "") or "")
+        return str(getattr(self.ref, "heading", "") or "")  # noqa: B009 - ref is a protocol
 
 
 @dataclass(frozen=True)
