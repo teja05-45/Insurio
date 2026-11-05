@@ -11,8 +11,10 @@ from app.core.config import Settings, get_settings
 from app.core.errors import AppError
 from app.core.security import decode_access_token
 from app.db.session import get_db
+from app.models.conversation import Conversation
 from app.models.document import Document
 from app.models.user import User
+from app.repositories import conversations as conversation_repo
 from app.repositories import documents as document_repo
 from app.repositories import users as user_repo
 
@@ -33,7 +35,9 @@ def get_current_user(
     try:
         user_id = uuid.UUID(str(payload["sub"]))
     except (ValueError, KeyError) as exc:
-        raise AppError("Invalid authentication token.", code="invalid_token", status_code=401) from exc
+        raise AppError(
+            "Invalid authentication token.", code="invalid_token", status_code=401
+        ) from exc
     user = user_repo.get_by_id(db, user_id)
     if user is None or not user.is_active:
         raise AppError("Account is unavailable.", code="account_unavailable", status_code=401)
@@ -56,6 +60,20 @@ def get_owned_document(
 
 
 OwnedDocument = Annotated[Document, Depends(get_owned_document)]
+
+
+def get_owned_conversation(
+    conversation_id: uuid.UUID,
+    db: DbSession,
+    user: CurrentUser,
+) -> Conversation:
+    conversation = conversation_repo.get_owned(db, conversation_id, user.id)
+    if conversation is None:
+        raise AppError("Conversation not found.", code="conversation_not_found", status_code=404)
+    return conversation
+
+
+OwnedConversation = Annotated[Conversation, Depends(get_owned_conversation)]
 
 
 def client_meta(request: Request) -> dict[str, str]:
