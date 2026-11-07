@@ -22,8 +22,17 @@ ignore = [
 "alembic/*" = ["E501", "I001"]
 
 [tool.pytest.ini_options]
+# Run from backend/. `pythonpath = ["."]` puts the backend package root on
+# sys.path for every invocation mode: bare `pytest` (the console script does
+# not add the cwd) and `python -m pytest` (which does). Without this, pytest's
+# prepend import mode only inserts backend/tests, so `import app` fails.
+pythonpath = ["."]
 testpaths = ["tests"]
-addopts = "-q"
+addopts = "--strict-markers"
+markers = [
+    "unit: fast tests that touch no HTTP layer or database",
+    "integration: tests that exercise the API through TestClient and SQLite",
+]
 filterwarnings = [
     "ignore::DeprecationWarning:passlib.*",
     "ignore::DeprecationWarning:pkg_resources.*",

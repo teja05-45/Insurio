@@ -1,3 +1,7 @@
+import pytest
+
+pytestmark = pytest.mark.integration
+
 TEXT_A = "INSURIO HEALTH POLICY\nSum Insured: Rs. 500000\nEXCLUSIONS\nCosmetic surgery.\n"
 TEXT_B = "INSURIO HEALTH POLICY\nSum Insured: Rs. 1000000\nEXCLUSIONS\nMaternity care.\n"
 

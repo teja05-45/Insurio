@@ -1,8 +1,11 @@
 import uuid
 from types import SimpleNamespace
 
+import pytest
 from app.ai.embeddings import HashingEmbedder
 from app.ai.retrieval import retrieve
+
+pytestmark = pytest.mark.unit
 
 DOCUMENTS = [
     "Cosmetic surgery is excluded from coverage unless required after an injury.",

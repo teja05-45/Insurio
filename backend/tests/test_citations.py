@@ -1,9 +1,12 @@
 import uuid
 from types import SimpleNamespace
 
+import pytest
 from app.ai.citations import validate_citations
 from app.ai.pipeline import build_grounded_answer, parse_json_object
 from app.ai.types import RetrievedChunk
+
+pytestmark = pytest.mark.unit
 
 SOURCE_TEXT = "Cosmetic surgery is excluded from coverage unless required after an accident."
 

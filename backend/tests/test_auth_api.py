@@ -1,4 +1,7 @@
+import pytest
 from app.core.security import hash_password, verify_password
+
+pytestmark = pytest.mark.integration
 
 
 def test_register_login_and_me(client):

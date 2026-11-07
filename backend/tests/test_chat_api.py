@@ -2,6 +2,8 @@ import pytest
 
 from conftest import canned_answer, parse_sse
 
+pytestmark = pytest.mark.integration
+
 
 @pytest.fixture
 def conversation(client, account, ready_document):

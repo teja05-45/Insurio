@@ -1,4 +1,8 @@
+import pytest
+
 from conftest import POLICY_TEXT, build_pdf
+
+pytestmark = pytest.mark.integration
 
 
 def test_upload_rejects_non_pdf_bytes(client, account):

@@ -1,7 +1,10 @@
 import re
 
+import pytest
 from app.ai.chunking import chunk_pages, is_heading, normalize_text
 from app.ai.types import PageText
+
+pytestmark = pytest.mark.unit
 
 
 def test_heading_detection():

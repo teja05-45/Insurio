@@ -1,8 +1,11 @@
 from types import SimpleNamespace
 
+import pytest
 from app.ai.extraction import build_insight_payload, extract_with_rules
 from app.ai.types import PageText
 from app.services.comparison import build_payload
+
+pytestmark = pytest.mark.unit
 
 PAGE = PageText(
     page_number=1,
