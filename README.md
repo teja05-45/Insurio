@@ -290,7 +290,9 @@ Full guide: [`docs/DOCKER_SETUP.md`](docs/DOCKER_SETUP.md).
 ```bash
 cd backend
 ruff check app tests
-pytest -q
+python -m pytest -q              # full suite: 55 tests
+python -m pytest -q -m unit      # 22 fast unit tests
+python -m pytest -q -m integration  # 33 API tests
 
 cd ../frontend
 npm run typecheck
@@ -298,8 +300,13 @@ npm run test
 npm run build
 ```
 
-The backend suite is offline: SQLite, hashing embeddings, injected fake LLM. No Groq calls are made.
-Actual results from this environment are in
+Run backend commands from `backend/`. `backend/pyproject.toml` sets `pythonpath = ["."]`, so both
+`pytest` and `python -m pytest` import `app` deterministically. The backend suite is offline: SQLite,
+hashing embeddings, injected fake LLM. No Groq calls are made.
+
+GitHub Actions (`.github/workflows/ci.yml`) runs backend lint, backend unit tests, backend integration
+tests, frontend typecheck/tests/build, both Docker image builds and `docker compose config`, with the
+Docker jobs gated on their prerequisites. Actual results from this environment are in
 [`docs/TEST_EXECUTION_REPORT.md`](docs/TEST_EXECUTION_REPORT.md).
 
 ## 16. API

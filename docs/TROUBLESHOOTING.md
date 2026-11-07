@@ -44,7 +44,9 @@
 
 | Symptom | Cause | Fix |
 |---|---|---|
-| `pytest` cannot import `app` | Wrong working directory | Run `python -m pytest` from `backend/` |
+| `ModuleNotFoundError: No module named 'app'` while loading `tests/conftest.py` | Bare `pytest` inserts only `backend/tests` on `sys.path`; `python -m pytest` inserts the cwd, which masked the problem locally | Resolved in the repository: `pyproject.toml` sets `pythonpath = ["."]`, so any invocation from `backend/` works. Still run commands from `backend/` |
+| CI backend job fails to import `app` but local tests pass | CI invoked the bare `pytest` console script while local runs used `python -m pytest` | Same fix; CI now runs `python -m pytest -q` from `backend/` |
+| `pytest` reports `PytestUnknownMarkWarning` / unknown marker | Marker not registered | Add it to `markers` in `[tool.pytest.ini_options]`; `--strict-markers` turns unknown markers into errors |
 | Tests hit the network | A test replaced the LLM incorrectly | Use the `fake_llm` fixture; never call Groq in tests |
 | `greenlet`/`swig` deprecation warnings | Native dependency warnings | Harmless; the suite still exits 0 |
 | Frontend tests fail to resolve `@/` | Vitest config not loaded | Run `npm run test` from `frontend/` |

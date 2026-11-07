@@ -22,7 +22,9 @@ cd backend
 python -m venv .venv
 pip install -r requirements-dev.txt
 ruff check app tests
-pytest -q
+python -m pytest -q                 # 55 tests
+python -m pytest -q -m unit         # 22 tests
+python -m pytest -q -m integration  # 33 tests
 
 # Frontend
 cd frontend
@@ -31,6 +33,11 @@ npm run typecheck
 npm run test
 npm run build
 ```
+
+Backend commands must run from `backend/`. `pyproject.toml` contains `pythonpath = ["."]` and
+`markers = [unit, integration]`, so bare `pytest` and `python -m pytest` resolve `app` the same way.
+Markers are declared at module level in each test file (`pytestmark = pytest.mark.unit` or
+`.integration`).
 
 ## 3. Test fixtures
 
@@ -72,10 +79,27 @@ and exit codes. Summary from the last run:
 | Suite | Result |
 |---|---|
 | `ruff check app tests` | Passed |
-| `pytest -q` | Passed |
+| `python -m pytest -q` | 55 passed (22 unit, 33 integration) |
 | `npm run typecheck` | Passed |
 | `npm run test` | 7 passed |
 | `npm run build` | Passed |
+
+## 5a. CI execution flow
+
+`.github/workflows/ci.yml` runs these jobs on every push to `main` and every pull request:
+
+| Job | Command | Depends on |
+|---|---|---|
+| `backend-lint` | `ruff check app tests` (from `backend/`) | — |
+| `backend-unit` | `python -m pytest -q -m unit` | — |
+| `backend-integration` | app import smoke test, then `python -m pytest -q -m integration` | — |
+| `frontend` | `npm ci`, `npm run typecheck`, `npm run test`, `npm run build` | — |
+| `docker-api` | `docker build ./backend`, import check, `alembic upgrade head` on a scratch SQLite DB | lint, unit, integration |
+| `docker-web` | `docker build ./frontend` with the API base URL build arg, `server.js` check | frontend |
+| `docker-compose` | `docker compose config --quiet` | lint, unit, integration, frontend |
+
+No job uses `continue-on-error`; a failing lint, test, build or image build fails the workflow. Tests
+need no repository secrets: the suite is offline and the Groq key is never read by CI.
 
 End-to-end browser tests and Playwright are **not implemented**. No browser automation was run, and
 that is reported as a limitation rather than a pass.

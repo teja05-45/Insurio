@@ -143,10 +143,101 @@ Executed against the Compose API with no Groq key:
 ## 7. Reproducing
 
 ```bash
-cd backend && ruff check app tests && pytest -q
+cd backend && ruff check app tests && python -m pytest -q
 cd ../frontend && npm run typecheck && npm run test && npm run build
 cd .. && docker compose up --build -d
 curl http://localhost:8000/health/ready
 ```
 
 Set `GROQ_API_KEY` before starting the API to exercise chat with a live provider.
+
+## 8. CI failure investigation and re-verification (2026-11-07)
+
+### Original failure
+
+GitHub Actions run `42010011699`, job `Backend (lint + tests)`:
+
+```
+ImportError while loading conftest.py
+backend/tests/conftest.py:32
+from app.db.session import engine
+ModuleNotFoundError: No module named 'app'
+```
+
+### Root cause
+
+The workflow already ran from `backend/` (`defaults.run.working-directory`), and `backend/app` is a
+valid package. The failure came from how pytest builds `sys.path`: with prepend import mode it inserts
+the first non-package parent of the test file (`backend/tests`, since `tests/` has no `__init__.py`),
+and the bare `pytest` console script does not add the current directory. `python -m pytest` adds the
+cwd, so local runs passed while CI failed.
+
+Reproduction before the fix, from `backend/`:
+
+```
+$ .venv/Scripts/pytest.exe -q
+ImportError while loading conftest '...\backend\tests\conftest.py'.
+tests\conftest.py:32: in <module>
+    from app.db.session import engine
+E   ModuleNotFoundError: No module named 'app'
+```
+
+### Fix
+
+- `backend/pyproject.toml`: added `pythonpath = ["."]`, `--strict-markers`, and the `unit` /
+  `integration` marker definitions.
+- Each test module declares `pytestmark = pytest.mark.unit` or `pytest.mark.integration`.
+- CI now runs `python -m pytest -q` from `backend/`, split into a unit job and an integration job.
+- Added the missing `backend/app/ai/__init__.py`.
+- CI restructured into `backend-lint`, `backend-unit`, `backend-integration`, `frontend`, `docker-api`,
+  `docker-web`, `docker-compose`, with Docker jobs gated on their prerequisites.
+
+### Commands and results
+
+| Command (from the stated directory) | Status | Result |
+|---|---|---|
+| `backend: .venv/Scripts/pytest.exe -q` | **Passed** | 55 passed (bare console script, the CI invocation shape) |
+| `backend: python -m pytest -q` | **Passed** | 55 passed |
+| `backend: python -m pytest -q -m unit` | **Passed** | 22 passed, 33 deselected |
+| `backend: python -m pytest -q -m integration` | **Passed** | 33 passed, 22 deselected |
+| `backend: ruff check app tests` | **Passed** | exit 0, `All checks passed!` |
+| `backend: alembic upgrade head` / `downgrade base` / `upgrade head` (SQLite) | **Passed** | revision `456095a86652`, all exit 0 |
+| `backend: alembic check` (SQLite) | **Passed** | no new upgrade operations detected |
+| `frontend: npm ci` | **Passed** | exit 0 |
+| `frontend: npm run typecheck` | **Passed** | exit 0 |
+| `frontend: npm run test` | **Passed** | 2 files, 7 tests |
+| `frontend: npm run build` | **Passed** | exit 0, 13 routes |
+| `docker compose config --quiet` | **Passed** | valid |
+| `docker compose build` | **Passed** | `insurio-api` and `insurio-web` built |
+| `docker run insurio-api python -c "from app.main import app"` | **Passed** | `Insurio API 2.0.0` |
+| `docker run insurio-api alembic upgrade head` (scratch SQLite) | **Passed** | revision applied |
+| `docker run insurio-web node -e accessSync('server.js')` | **Passed** | standalone server present |
+| `docker compose up -d` (`API_PORT=8100`, `WEB_PORT=3100`, `POSTGRES_PORT=55432`) | **Passed** | db, api, web all healthy |
+| `GET :8100/health/live`, `/health/ready` | **Passed** | 200, database connected |
+| `GET :3100/`, `/login` | **Passed** | 200 |
+
+Containerized API smoke test against PostgreSQL (no Groq key):
+
+| Step | Result |
+|---|---|
+| Two accounts registered | 201, tokens issued |
+| Two PDFs uploaded | 202 |
+| Ingestion reached ready | `ready`, 1 page, 3 chunks |
+| Pages endpoint | 200, 195 chars on page 1 |
+| Insights | 200, 20 fields |
+| Comparison | 201, 5 differences |
+| Conversation created | 201 |
+| Chat without a key | 503 `llm_not_configured` (intended explicit failure) |
+| Other user reads the document | 404 (ownership isolation) |
+| PDF download | 200, `application/pdf`, 1011 bytes |
+| Document delete | 200 |
+
+### Not verified in this pass
+
+- **Live Groq generation** — no API key; the fake-LLM API tests remain the evidence for the streaming
+  and citation contract. **Blocked**, not passed.
+- **GitHub-hosted run** — the workflow can only be confirmed after the push; the local equivalent of
+  every job step passed.
+- **PostgreSQL migration downgrade** — only verified on SQLite; upgrade verified on PostgreSQL through
+  container startup.
+- **OCR, voice input, browser E2E, visual regression, load tests** — unchanged from section 6.

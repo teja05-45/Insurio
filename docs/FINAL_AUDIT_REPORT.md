@@ -99,7 +99,71 @@ change. It was not amended because the repository rules forbid rewriting history
 10. **Test database schema bypasses Alembic.** Tests create tables from models, so migration/model
     drift is not automatically detected.
 
-## H. Verdict
+## H. CI/CD remediation (2026-11-07)
+
+### Original failure
+
+The `Backend (lint + tests)` job of GitHub Actions run `42010011699` failed while loading the test
+fixtures:
+
+```
+ImportError while loading conftest '.../backend/tests/conftest.py'.
+backend/tests/conftest.py:32: in <module>
+    from app.db.session import engine
+E   ModuleNotFoundError: No module named 'app'
+```
+
+### Root cause
+
+Not the working directory: the workflow already set `defaults.run.working-directory: backend`, and
+`backend/app/__init__.py` exists. The difference was the interpreter invocation.
+
+* pytest's prepend import mode inserts the test file's first non-package parent on `sys.path`. Because
+  `backend/tests/` has no `__init__.py`, that path is `backend/tests`, never `backend`.
+* The bare `pytest` console script does **not** add the current directory to `sys.path`.
+* `python -m pytest` **does** add the cwd (`backend/`) to `sys.path[0]`.
+
+Local verification used `python -m pytest`, CI used `pytest`, so the same code imported `app` locally
+and failed on the runner. Reproduced locally with `backend/.venv/Scripts/pytest.exe -q` before the
+fix: identical traceback at `tests/conftest.py:32`.
+
+### Fix
+
+1. `backend/pyproject.toml`: `pythonpath = ["."]` under `[tool.pytest.ini_options]` puts the package
+   root on `sys.path` for every invocation mode, without any `sys.path` hack in `conftest.py`.
+2. CI runs `python -m pytest -q` from `backend/`, matching the documented local command.
+3. Added the missing `backend/app/ai/__init__.py` so `app.ai` is a regular package like its siblings.
+4. Registered `unit` / `integration` markers with `--strict-markers` and split the suite into two CI
+   jobs.
+
+### Re-verification
+
+| Check | Status | Evidence |
+|---|---|---|
+| Bare `pytest -q` from `backend/` | **Passed** | 55 passed after the fix (previously ImportError) |
+| `python -m pytest -q` | **Passed** | 55 passed, exit 0 |
+| Unit marker | **Passed** | 22 passed, 33 deselected |
+| Integration marker | **Passed** | 33 passed, 22 deselected |
+| `ruff check app tests` | **Passed** | exit 0 |
+| Migration chain | **Passed** | `upgrade head` → `downgrade base` → `upgrade head` on SQLite, exit 0 |
+| Model/migration drift | **Passed** | `alembic check`: no new upgrade operations detected |
+| Frontend | **Passed** | typecheck exit 0; 7 tests; production build exit 0 |
+| Docker images | **Passed** | `insurio-api` and `insurio-web` built; image import and `alembic upgrade head` verified |
+| Compose stack | **Passed** | `docker compose config --quiet` valid; db/api/web all healthy |
+| Containerized smoke test | **Passed** | register, upload, ready ingestion (3 chunks), pages, 20 insight fields, comparison (5 differences), ownership 404, PDF download 200, delete 200 |
+| Chat against live Groq | **Blocked** | No API key here; the endpoint correctly returns `503 llm_not_configured` |
+| New GitHub Actions run | **Blocked** | Requires the push to complete; see the delivery report for the run URL |
+
+### Known limitations after remediation
+
+- Docker jobs are gated on all backend and frontend jobs, so they run only when those succeed; that is
+  intentional, not a skip.
+- CI does not exercise a real PostgreSQL instance; migrations are verified against SQLite in CI and
+  PostgreSQL via container startup locally.
+- The test suite still creates its schema from models rather than Alembic; `alembic check` covers drift
+  when run manually.
+
+## I. Verdict
 
 The application is structurally complete, builds, passes its automated checks, and works end to end
 for accounts, uploads, extraction, insights, comparison and ownership isolation. Chat is
