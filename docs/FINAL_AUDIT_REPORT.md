@@ -152,7 +152,7 @@ fix: identical traceback at `tests/conftest.py:32`.
 | Compose stack | **Passed** | `docker compose config --quiet` valid; db/api/web all healthy |
 | Containerized smoke test | **Passed** | register, upload, ready ingestion (3 chunks), pages, 20 insight fields, comparison (5 differences), ownership 404, PDF download 200, delete 200 |
 | Chat against live Groq | **Blocked** | No API key here; the endpoint correctly returns `503 llm_not_configured` |
-| New GitHub Actions run | **Blocked** | Requires the push to complete; see the delivery report for the run URL |
+| New GitHub Actions run | **Passed** | [Run 42390594919](https://github.com/teja05-45/Insurio/actions/runs/42390594919) on `2935a5f`: all 7 jobs succeeded (lint, 22 unit, 33 integration, frontend typecheck/7 tests/build, Docker API build, Docker web build, compose config) |
 
 ### Known limitations after remediation
 

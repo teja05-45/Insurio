@@ -236,8 +236,12 @@ Containerized API smoke test against PostgreSQL (no Groq key):
 
 - **Live Groq generation** — no API key; the fake-LLM API tests remain the evidence for the streaming
   and citation contract. **Blocked**, not passed.
-- **GitHub-hosted run** — the workflow can only be confirmed after the push; the local equivalent of
-  every job step passed.
+- **GitHub-hosted run** — **Passed**. [Run 42390594919](https://github.com/teja05-45/Insurio/actions/runs/42390594919)
+  on commit `2935a5f` completed with conclusion `success`; every job reported success:
+  `Backend lint`, `Backend unit tests` (22 passed, 33 deselected), `Backend integration tests`
+  (33 passed, 22 deselected), `Frontend (typecheck + tests + build)` (7 tests passed, production build),
+  `Docker backend image` (build, app import, `alembic upgrade head`), `Docker frontend image`
+  (build, `server.js` check) and `Docker Compose validation`.
 - **PostgreSQL migration downgrade** — only verified on SQLite; upgrade verified on PostgreSQL through
   container startup.
 - **OCR, voice input, browser E2E, visual regression, load tests** — unchanged from section 6.
